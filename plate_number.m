@@ -28,13 +28,15 @@ function[] = plate_number()
     figure();
     imshow(L);
     title('AreasFound');
+    imwrite(L,'1.bmp','bmp');
     %字符区域已找到，之后可以做一些处理。
     se1 = strel('disk',1);
     se2 = strel('square',3);
-    L2 = imclose(L, se1);
-    L2 = imclose(L2, se2);
-    L2 = imopen(L2, se2);
+    newL = imclose(L, se1);
+    newL = imclose(newL, se2);
+    newL = imopen(newL, se2);
     figure();
-    imshow(L2);
+    imshow(newL);
     title('AfterProcessing');
+    imwrite(newL,'2.bmp','bmp');
 end
