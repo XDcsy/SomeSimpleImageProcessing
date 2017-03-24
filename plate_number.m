@@ -1,39 +1,40 @@
 function[] = plate_number()
-    numberAsAGroup = 6;  %ä¸€ä¸ªæµ‹è¯•groupåŒ…å«çš„åŒºåŸŸæ•°ï¼Œä¸å¤§äºè½¦ç‰Œä¸Šçš„å­—ç¬¦æ€»æ•°ã€‚è¶Šå¤§è¶Šç²¾ç¡®ï¼Œä½†æ— æ³•æ‰¾åˆ°ç»“æœæ—¶å¯è°ƒå°æ­¤æ•°æˆ–è°ƒå¤§é˜ˆå€¼ã€‚
     imgName = 'number_plate.jpg';
     img = imread(imgName);
     img = rgb2gray(img);
     img = im2bw(img);
-    [L, numberOfAreas] = bwlabel(img,4);
+    [L, numberOfAreas] = bwlabel(img,4); %½«¸÷Á¬Í¨ÇøÓò±êºÅ
+
+    %¸ù¾İÇøÓòµÄ³¤¿í±È½øĞĞÅÅ³ı¡£
+    %Èç¹û³µÅÆµÄ×Ö·ûÇøÓò´æÔÚÕ³Á¬»ò¶ÏÁÑ£¬½«ÎŞ·¨Ê¹ÓÃ³¤¿í±ÈÅÅ³ı¡£
+    %´ËÊ±¿ÉÒÔ×¢ÊÍµôÏÂ·½´úÂë£¬Ö»ÓÃºóÒ»ÖÖÒÀ¾İÎ»ÖÃµÄ·½·¨¡£
+    L2 = L;
     for i = 1 : numberOfAreas
         [x, y] = find(L==i);
-        block(i, 1:4) = [max(x) - min(x), max(x), i, max(y) - min(y)]; %blockä¸­ä¿å­˜å›¾åƒä¸­æ‰€æœ‰è¿é€šåŒºåŸŸçš„å¤–æ¥çŸ©å½¢çš„é•¿ã€å®½ã€æœ€å¤§çºµåæ ‡å’Œåºå·
+        L2(L2==i) = (max(x) - min(x))/(max(y) - min(y)); %ÓÃ¸÷ÇøÓòµÄ³¤¿í±ÈÌæ»»±êºÅ£¬´¢´æÓÚL2
     end
-    block = sortrows(block, 1);
-    k = 1;
-    for i = 1 : numberOfAreas - numberAsAGroup + 1 
-        CVlength = block(i : i + numberAsAGroup - 1, 1); %numberAsAGroupä¸ªè¿é€šåŒºåŸŸä½œä¸ºä¸€ç»„
-        CVy = block(i : i + numberAsAGroup - 1, 2);
-        if std(CVlength)/mean(CVlength) < 0.15 && std(CVy)/mean(CVy) < 0.15 && min(block(i : i + numberAsAGroup - 1, 4))*4 > max(block(i : i + numberAsAGroup - 1, 4)) %å¦‚æœä¸€ç»„åŒºåŸŸä¸­çš„é•¿åº¦å’Œæœ€å¤§çºµåæ ‡çš„å˜å¼‚ç³»æ•°å°äºé˜ˆå€¼ï¼Œå¹¶ä¸”æœ€å°çš„æ¨ªå‘å®½åº¦ä¸å°äºæœ€å¤§æ¨ªå‘å®½åº¦çš„å››åˆ†ä¹‹ä¸€
-            numberBlock(k, 1:numberAsAGroup) = (block(i : i + numberAsAGroup - 1, 3))'; %è®¤ä¸ºæ‰¾åˆ°å­—ç¬¦åŒºåŸŸï¼Œè®°å½•åºå·
-			k = k + 1;
+    L(union(find(L2<1.3),find(L2>1.7))) = 0; %³¤¿í±ÈÔÚãĞÖµ·¶Î§ÒÔÍâµÄÇøÓò£¬È«²¿ÖÃÎª0
+
+    %¸ù¾İÇøÓòµÄÎ»ÖÃ½øĞĞÅÅ³ı¡£
+    areas = unique(L);  %¼ÇÂ¼´ËÊ±Ê£ÓàµÄ¸÷ÇøÓòµÄĞòºÅ
+    for i = 2 : length(areas) %¼ì²é¸÷¸öÇøÓò£¬Ñ­»·´Ó2¿ªÊ¼£¬ÒòÎªareas(1)¶ÔÓ¦²»ÊÇĞòºÅµÄ0
+        [x, ~] = find(L==areas(i));
+        if length(unique(L(min(x):max(x),:))) < 6 + 1  %¶ÔÃ¿¸öÇøÓò£¬Èç¹ûËüÏò×óÓÒÁ½±ßÑÓÉì£¬ÎŞ·¨¸²¸Çµ½6¸ö£¨³µÅÆÉÏµÄ×Ö·ûÊı£©»òÒÔÉÏµÄ²»Í¬ÇøÓò¡££¨¼Ó1ÊÇÒòÎª´æÔÚ·ÇÇøÓòĞòºÅµÄ0¡££©
+            L(L==areas(i)) = 0;  %ÄÇÃ´½«Õâ¸öÇøÓòÈ«²¿ÖÃ0
         end
     end
-    for i = 1 : numel(numberBlock)
-        L(find(L == numberBlock(i))) = -1; %å­—ç¬¦åŒºåŸŸæš‚æ—¶ç½®ä¸º-1
-    end
-L(find(L~=-1)) = 0; %å­—ç¬¦åŒºåŸŸä»¥å¤–ç½®ä¸ºå…¨é»‘
-L(find(L==-1)) = 1; %å­—ç¬¦åŒºåŸŸç½®ç™½è‰²
-figure();
-imshow(L);
-title('NumberAreasFound');
-%å­—ç¬¦åŒºåŸŸå·²æ‰¾åˆ°ï¼Œä¹‹åå¯ä»¥è¿›ä¸€æ­¥åšä¸€äº›å¤„ç†ã€‚
-se1 = strel('disk',1);
-se2 = strel('square',3);
-L2 = imclose(L, se1);
-L2 = imclose(L2, se2);
-L2 = imopen(L2, se2);
-figure();
-imshow(L2);
-title('AfterProcessing');
+    L(L ~= 0) = 1;  %Ê£ÓàµÄÇøÓòÖÃÎª1£¬¼´ÎªÕÒµ½µÄ×Ö·ûÇøÓò
+    
+    figure();
+    imshow(L);
+    title('AreasFound');
+    %×Ö·ûÇøÓòÒÑÕÒµ½£¬Ö®ºó¿ÉÒÔ×öÒ»Ğ©´¦Àí¡£
+    se1 = strel('disk',1);
+    se2 = strel('square',3);
+    L2 = imclose(L, se1);
+    L2 = imclose(L2, se2);
+    L2 = imopen(L2, se2);
+    figure();
+    imshow(L2);
+    title('AfterProcessing');
 end
