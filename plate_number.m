@@ -24,12 +24,12 @@ function[] = plate_number()
         end
     end
     L(L ~= 0) = 1;  %剩余的区域置为1，即为找到的字符区域
-    
+
     figure();
     imshow(L);
     title('AreasFound');
-    imwrite(L,'1.bmp','bmp');
     %字符区域已找到，之后可以做一些处理。
+    %减少一些噪点并加强字符
     se1 = strel('disk',1);
     se2 = strel('square',3);
     newL = imclose(L, se1);
@@ -38,5 +38,17 @@ function[] = plate_number()
     figure();
     imshow(newL);
     title('AfterProcessing');
-    imwrite(newL,'2.bmp','bmp');
+    imwrite(newL,'result.bmp','bmp');
+
+    %如果字符只有外轮廓，用下面的代码取代上面的处理代码，尝试将轮廓内填满。
+    %se1 = strel('disk',4);
+    %tmp1 = imerode(imclose(L, se1),se1);
+    %se2 = strel('disk',2);
+    %holes = imerode(imfill(tmp1, 'holes') - tmp1,se2);
+    %tmp2 = imfill(L, 'holes');
+    %newL = tmp2 - holes;
+    %imwrite(newL,'result.bmp','bmp')
+    %figure();
+    %imshow(newL);
+    %title('AfterProcessing');
 end
